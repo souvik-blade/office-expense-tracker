@@ -14,6 +14,8 @@ class DBHelper {
     return _database!;
   }
 
+
+
   Future<Database> _initDB() async {
     final path = join(await getDatabasesPath(), 'office_expense.db');
     return openDatabase(
@@ -22,12 +24,13 @@ class DBHelper {
       onCreate: (db, version) {
         return db.execute('''
           CREATE TABLE expenses(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT,
-            amount REAL,
-            isIncome INTEGER,
-            date TEXT
-          )
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT,
+  amount REAL,
+  isIncome INTEGER,
+  date TEXT
+)
+
         ''');
       },
     );

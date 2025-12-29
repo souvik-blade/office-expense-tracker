@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../models/expense_model.dart';
 
 class AddExpense extends StatefulWidget {
@@ -10,7 +10,8 @@ class AddExpense extends StatefulWidget {
 class _AddExpenseState extends State<AddExpense> {
   final titleController = TextEditingController();
   final amountController = TextEditingController();
-  String type = 'expense';
+
+  bool isIncome = false; // default = expense
 
   @override
   Widget build(BuildContext context) {
@@ -80,24 +81,25 @@ class _AddExpenseState extends State<AddExpense> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4)),
         ],
       ),
       child: Row(
         children: [
-          _typeButton("Income", "income", Colors.green),
-          _typeButton("Expense", "expense", Colors.red),
+          _typeButton("Income", true, Colors.green),
+          _typeButton("Expense", false, Colors.red),
         ],
       ),
     );
   }
 
-  Widget _typeButton(String text, String value, Color color) {
-    final isSelected = type == value;
+  Widget _typeButton(String text, bool value, Color color) {
+    final isSelected = isIncome == value;
+
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => type = value),
+        onTap: () => setState(() => isIncome = value),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -108,7 +110,7 @@ class _AddExpenseState extends State<AddExpense> {
           child: Column(
             children: [
               Icon(
-                value == 'income' ? Icons.arrow_downward : Icons.arrow_upward,
+                value ? Icons.arrow_downward : Icons.arrow_upward,
                 color: isSelected ? color : Colors.grey,
               ),
               const SizedBox(height: 4),
@@ -136,7 +138,7 @@ class _AddExpenseState extends State<AddExpense> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4)),
         ],
       ),
@@ -168,7 +170,8 @@ class _AddExpenseState extends State<AddExpense> {
           padding: EdgeInsets.zero,
         ),
         onPressed: () {
-          if (titleController.text.isEmpty || amountController.text.isEmpty) {
+          if (titleController.text.isEmpty ||
+              amountController.text.isEmpty) {
             return;
           }
 
@@ -177,16 +180,17 @@ class _AddExpenseState extends State<AddExpense> {
             ExpenseModel(
               title: titleController.text,
               amount: double.parse(amountController.text),
-              type: type,
+              isIncome: isIncome,
               date: DateTime.now(),
             ),
           );
+
           Navigator.pop(context);
         },
         child: Ink(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: type == 'income'
+              colors: isIncome
                   ? [Colors.green, Colors.teal]
                   : [Colors.redAccent, Colors.orange],
             ),

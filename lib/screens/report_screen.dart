@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
-
 import '../models/expense_model.dart';
 import '../utils/excel_export.dart';
 
@@ -15,17 +14,17 @@ class ReportScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
 
-    final monthlyData = box.values.where(
-      (e) => e.date.year == now.year && e.date.month == now.month,
-    );
+    final monthlyData = box.values
+        .where((e) => e.date.year == now.year && e.date.month == now.month)
+        .toList();
 
     final income = monthlyData
-        .where((e) => e.type == 'income')
-        .fold<double>(0, (s, e) => s + e.amount);
+        .where((e) => e.isIncome)
+        .fold<double>(0, (sum, e) => sum + e.amount);
 
     final expense = monthlyData
-        .where((e) => e.type == 'expense')
-        .fold<double>(0, (s, e) => s + e.amount);
+        .where((e) => !e.isIncome)
+        .fold<double>(0, (sum, e) => sum + e.amount);
 
     final total = income + expense;
 
@@ -36,6 +35,7 @@ class ReportScreen extends StatelessWidget {
           _header(context),
           _summary(income, expense),
           _chart(income, expense, total),
+          _table(monthlyData),
         ],
       ),
     );
@@ -69,7 +69,7 @@ class ReportScreen extends StatelessWidget {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.only(top: 60, left: 16, right: 16),
+          padding: const EdgeInsets.only(top: 110, left: 16, right: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -192,7 +192,9 @@ class ReportScreen extends StatelessWidget {
   }
 
   PieChartSectionData _section(double value, double total, Color color) {
-    final percent = total == 0 ? 0 : ((value / total) * 100).toStringAsFixed(1);
+    final percent = total == 0
+        ? '0'
+        : ((value / total) * 100).toStringAsFixed(1);
 
     return PieChartSectionData(
       value: value,
@@ -206,3 +208,122 @@ class ReportScreen extends StatelessWidget {
     );
   }
 }
+
+// ================= TABLE =================
+SliverToBoxAdapter _table(List<ExpenseModel> data) {
+  if (data.isEmpty) {
+    return const SliverToBoxAdapter(
+      child: Padding(
+        padding: EdgeInsets.all(24),
+        child: Center(
+          child: Text(
+            "No transactions for this month",
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+      ),
+    );
+  }
+
+  return SliverToBoxAdapter(
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Transactions",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+
+          // ===== Header =====
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: const [
+                Expanded(flex: 2, child: Text("Date", style: _headerStyle)),
+                Expanded(flex: 3, child: Text("Title", style: _headerStyle)),
+                Expanded(flex: 2, child: Text("Type", style: _headerStyle)),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    "Amount",
+                    style: _headerStyle,
+                    textAlign: TextAlign.end,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          // ===== Rows =====
+          ...data.map((e) {
+            final isIncome = e.isIncome;
+            final color = isIncome ? Colors.green : Colors.red;
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: const [
+                  BoxShadow(
+                    blurRadius: 6,
+                    color: Colors.black12,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Text(DateFormat('dd MMM').format(e.date)),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Text(e.title, overflow: TextOverflow.ellipsis),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      isIncome ? "Income" : "Expense",
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      "₹ ${e.amount.toStringAsFixed(0)}",
+                      textAlign: TextAlign.end,
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    ),
+  );
+}
+
+const _headerStyle = TextStyle(
+  fontWeight: FontWeight.w600,
+  color: Colors.black54,
+);

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import '../models/expense_model.dart';
@@ -7,6 +6,8 @@ import 'add_expense_screen.dart';
 import 'report_screen.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -16,18 +17,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
   DateTime selectedMonth = DateTime.now();
 
+  // ================= MONTH FILTER =================
   List<ExpenseModel> get monthlyData {
     return box.values.where((e) {
-      if (e.date == null) return false;
-
       return e.date.month == selectedMonth.month &&
           e.date.year == selectedMonth.year;
     }).toList();
   }
 
-  double total(String type) {
+  // ================= TOTALS =================
+  double totalIncome() {
     return monthlyData
-        .where((e) => e.type == type)
+        .where((e) => e.isIncome)
+        .fold(0.0, (sum, e) => sum + e.amount);
+  }
+
+  double totalExpense() {
+    return monthlyData
+        .where((e) => !e.isIncome)
         .fold(0.0, (sum, e) => sum + e.amount);
   }
 
@@ -45,8 +52,10 @@ class _HomeScreenState extends State<HomeScreen> {
           context,
           MaterialPageRoute(builder: (_) => AddExpense()),
         ),
-        icon: Icon(Icons.add),
-        label: Text("Add"),
+        backgroundColor: Colors.blueAccent,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text("Add"),
       ),
       body: ValueListenableBuilder(
         valueListenable: box.listenable(),
@@ -70,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
       expandedHeight: 160,
       backgroundColor: Colors.transparent,
       flexibleSpace: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Colors.indigo, Colors.blueAccent],
             begin: Alignment.topLeft,
@@ -78,11 +87,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.only(top: 50, left: 16, right: 16),
+          padding: const EdgeInsets.only(top: 80, left: 16, right: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 "Office Expense Tracker",
                 style: TextStyle(
                   color: Colors.white,
@@ -90,24 +99,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   IconButton(
                     onPressed: () => changeMonth(-1),
-                    icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
                   ),
                   Text(
                     DateFormat('MMMM yyyy').format(selectedMonth),
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
                   ),
                   IconButton(
                     onPressed: () => changeMonth(1),
-                    icon: Icon(Icons.arrow_forward_ios, color: Colors.white),
+                    icon: const Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.white,
+                    ),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   IconButton(
-                    icon: Icon(Icons.bar_chart, color: Colors.white),
+                    icon: const Icon(Icons.bar_chart, color: Colors.white),
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => ReportScreen()),
@@ -124,20 +136,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ================= SUMMARY =================
   SliverToBoxAdapter _buildSummaryCards() {
+    final income = totalIncome();
+    final expense = totalExpense();
+
     return SliverToBoxAdapter(
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            _summaryCard("Income", total('income'), Colors.green),
-            SizedBox(width: 12),
-            _summaryCard("Expense", total('expense'), Colors.red),
-            SizedBox(width: 12),
-            _summaryCard(
-              "Balance",
-              total('income') - total('expense'),
-              Colors.blue,
-            ),
+            _summaryCard("Income", income, Colors.green),
+            const SizedBox(width: 12),
+            _summaryCard("Expense", expense, Colors.red),
+            const SizedBox(width: 12),
+            _summaryCard("Balance", income - expense, Colors.blue),
           ],
         ),
       ),
@@ -147,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _summaryCard(String title, double amount, Color color) {
     return Expanded(
       child: Container(
-        padding: EdgeInsets.all(12),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(16),
@@ -162,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               "₹ ${amount.toStringAsFixed(0)}",
               style: TextStyle(
@@ -182,13 +193,15 @@ class _HomeScreenState extends State<HomeScreen> {
     return SliverList(
       delegate: SliverChildBuilderDelegate((context, i) {
         final item = monthlyData[i];
+        final isIncome = item.isIncome;
+
         return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(14),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
                   blurRadius: 8,
                   color: Colors.black12,
@@ -198,19 +211,17 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: ListTile(
               leading: CircleAvatar(
-                backgroundColor: item.type == 'income'
+                backgroundColor: isIncome
                     ? Colors.green.withOpacity(0.15)
                     : Colors.red.withOpacity(0.15),
                 child: Icon(
-                  item.type == 'income'
-                      ? Icons.arrow_downward
-                      : Icons.arrow_upward,
-                  color: item.type == 'income' ? Colors.green : Colors.red,
+                  isIncome ? Icons.arrow_downward : Icons.arrow_upward,
+                  color: isIncome ? Colors.green : Colors.red,
                 ),
               ),
               title: Text(
                 item.title,
-                style: TextStyle(fontWeight: FontWeight.w600),
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               subtitle: Text(DateFormat('dd MMM yyyy').format(item.date)),
               trailing: Row(
@@ -220,11 +231,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     "₹ ${item.amount}",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: item.type == 'income' ? Colors.green : Colors.red,
+                      color: isIncome ? Colors.green : Colors.red,
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.delete, color: Colors.grey),
+                    icon: const Icon(Icons.delete, color: Colors.grey),
                     onPressed: () => item.delete(),
                   ),
                 ],
