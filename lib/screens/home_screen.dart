@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:office_expense_tracker/app_theme.dart';
 import '../models/expense_model.dart';
 import 'add_expense_screen.dart';
 import 'report_screen.dart';
@@ -52,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
           context,
           MaterialPageRoute(builder: (_) => AddExpense()),
         ),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: AppTheme.indigoAccent,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
         label: const Text("Add"),
@@ -76,58 +77,94 @@ class _HomeScreenState extends State<HomeScreen> {
   SliverAppBar _buildHeader() {
     return SliverAppBar(
       pinned: true,
-      expandedHeight: 160,
-      backgroundColor: Colors.transparent,
-      flexibleSpace: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.indigo, Colors.blueAccent],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+      expandedHeight: 140, // 👈 give it enough room
+      backgroundColor: AppTheme.indigoAccent,
+
+      flexibleSpace: FlexibleSpaceBar(
+        collapseMode: CollapseMode.pin,
+        expandedTitleScale: 1.2,
+        title: Row(
+          children: [
+            IconButton(
+              onPressed: () => changeMonth(-1),
+              icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+            ),
+            Text(
+              DateFormat('MMMM yyyy').format(selectedMonth),
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+            ),
+            IconButton(
+              onPressed: () => changeMonth(1),
+              icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+            ),
+            const Spacer(),
+            IconButton(
+              icon: const Icon(Icons.bar_chart, color: Colors.white),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ReportScreen()),
+              ),
+            ),
+          ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.only(top: 80, left: 16, right: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Office Expense Tracker",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+        background: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            child: const Text(
+              "Vision Expense Tracker",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () => changeMonth(-1),
-                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                  ),
-                  Text(
-                    DateFormat('MMMM yyyy').format(selectedMonth),
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                  IconButton(
-                    onPressed: () => changeMonth(1),
-                    icon: const Icon(
-                      Icons.arrow_forward_ios,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.bar_chart, color: Colors.white),
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => ReportScreen()),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            ),
+            // Column(
+            //   crossAxisAlignment: CrossAxisAlignment.start,
+            //   children: [
+            //     const SizedBox(height: 24),
+            //     const Text(
+            //       "Vision Expense Tracker",
+            //       style: TextStyle(
+            //         color: Colors.white,
+            //         fontSize: 22,
+            //         fontWeight: FontWeight.bold,
+            //       ),
+            //     ),
+
+            //     const SizedBox(height: 12),
+            //     Row(
+            //       children: [
+            //         IconButton(
+            //           onPressed: () => changeMonth(-1),
+            //           icon: const Icon(
+            //             Icons.arrow_back_ios,
+            //             color: Colors.white,
+            //           ),
+            //         ),
+            //         Text(
+            //           DateFormat('MMMM yyyy').format(selectedMonth),
+            //           style: const TextStyle(color: Colors.white, fontSize: 16),
+            //         ),
+            //         IconButton(
+            //           onPressed: () => changeMonth(1),
+            //           icon: const Icon(
+            //             Icons.arrow_forward_ios,
+            //             color: Colors.white,
+            //           ),
+            //         ),
+            //         const Spacer(),
+            //         IconButton(
+            //           icon: const Icon(Icons.bar_chart, color: Colors.white),
+            //           onPressed: () => Navigator.push(
+            //             context,
+            //             MaterialPageRoute(builder: (_) => ReportScreen()),
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ],
+            // ),
           ),
         ),
       ),
@@ -199,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTheme.card,
               borderRadius: BorderRadius.circular(14),
               boxShadow: const [
                 BoxShadow(

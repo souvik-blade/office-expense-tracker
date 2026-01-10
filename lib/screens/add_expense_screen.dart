@@ -16,11 +16,9 @@ class _AddExpenseState extends State<AddExpense> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffF6F7FB),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.black,
+
         title: const Text(
           "Add Transaction",
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -67,11 +65,7 @@ class _AddExpenseState extends State<AddExpense> {
   Widget _label(String text) {
     return Text(
       text,
-      style: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-        color: Colors.black54,
-      ),
+      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
     );
   }
 
@@ -136,7 +130,6 @@ class _AddExpenseState extends State<AddExpense> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         boxShadow: const [
           BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4)),
@@ -170,8 +163,7 @@ class _AddExpenseState extends State<AddExpense> {
           padding: EdgeInsets.zero,
         ),
         onPressed: () {
-          if (titleController.text.isEmpty ||
-              amountController.text.isEmpty) {
+          if (titleController.text.isEmpty || amountController.text.isEmpty) {
             return;
           }
 

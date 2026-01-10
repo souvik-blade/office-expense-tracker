@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:office_expense_tracker/app_theme.dart';
 import '../models/expense_model.dart';
 import '../utils/excel_export.dart';
 
@@ -29,7 +30,6 @@ class ReportScreen extends StatelessWidget {
     final total = income + expense;
 
     return Scaffold(
-      backgroundColor: const Color(0xffF6F7FB),
       body: CustomScrollView(
         slivers: [
           _header(context),
@@ -45,8 +45,8 @@ class ReportScreen extends StatelessWidget {
   SliverAppBar _header(BuildContext context) {
     return SliverAppBar(
       pinned: true,
-      expandedHeight: 160,
-      backgroundColor: Colors.transparent,
+      expandedHeight: 140, // 👈 enough space for content
+      backgroundColor: AppTheme.indigoAccent,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () => Navigator.pop(context),
@@ -60,33 +60,34 @@ class ReportScreen extends StatelessWidget {
           },
         ),
       ],
-      flexibleSpace: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.indigo, Colors.blueAccent],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.only(top: 110, left: 16, right: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Monthly Report",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+      flexibleSpace: FlexibleSpaceBar(
+        collapseMode: CollapseMode.pin,
+        background: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 32),
+
+                const Text(
+                  "Monthly Report",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                DateFormat('MMMM yyyy').format(DateTime.now()),
-                style: const TextStyle(color: Colors.white70),
-              ),
-            ],
+
+                const SizedBox(height: 8),
+
+                Text(
+                  DateFormat('MMMM yyyy').format(DateTime.now()),
+                  style: const TextStyle(color: Colors.white70),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -114,7 +115,7 @@ class ReportScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.card,
           borderRadius: BorderRadius.circular(18),
           boxShadow: const [
             BoxShadow(
@@ -155,7 +156,7 @@ class ReportScreen extends StatelessWidget {
           height: 300,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppTheme.card,
             borderRadius: BorderRadius.circular(20),
             boxShadow: const [
               BoxShadow(
@@ -241,7 +242,7 @@ SliverToBoxAdapter _table(List<ExpenseModel> data) {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
             decoration: BoxDecoration(
-              color: Colors.grey.shade200,
+              color: AppTheme.indigoAccent,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
@@ -272,7 +273,7 @@ SliverToBoxAdapter _table(List<ExpenseModel> data) {
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppTheme.card,
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: const [
                   BoxShadow(
@@ -286,11 +287,18 @@ SliverToBoxAdapter _table(List<ExpenseModel> data) {
                 children: [
                   Expanded(
                     flex: 2,
-                    child: Text(DateFormat('dd MMM').format(e.date)),
+                    child: Text(
+                      DateFormat('dd MMM').format(e.date),
+                      style: const TextStyle(fontSize: 15),
+                    ),
                   ),
                   Expanded(
                     flex: 3,
-                    child: Text(e.title, overflow: TextOverflow.ellipsis),
+                    child: Text(
+                      e.title,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 15),
+                    ),
                   ),
                   Expanded(
                     flex: 2,
@@ -323,7 +331,4 @@ SliverToBoxAdapter _table(List<ExpenseModel> data) {
   );
 }
 
-const _headerStyle = TextStyle(
-  fontWeight: FontWeight.w600,
-  color: Colors.black54,
-);
+const _headerStyle = TextStyle(fontWeight: FontWeight.w600);
