@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:office_expense_tracker/app_theme.dart';
+import 'package:office_expense_tracker/screens/excel_import.dart';
 import '../models/expense_model.dart';
 import 'add_expense_screen.dart';
 import 'report_screen.dart';
@@ -48,15 +49,44 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => AddExpense()),
-        ),
-        backgroundColor: AppTheme.indigoAccent,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text("Add"),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton.extended(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => AddExpense()),
+            ),
+            backgroundColor: AppTheme.indigoAccent,
+            foregroundColor: Colors.white,
+            icon: const Icon(Icons.add),
+            label: const Text("Add"),
+          ),
+          SizedBox(height: 16),
+          FloatingActionButton.extended(
+            onPressed: () async {
+              try {
+                await ExcelImport.importExpensesFromExcel();
+                if (!mounted) return;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Excel data imported successfully"),
+                  ),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Invalid Excel file")),
+                );
+              }
+            },
+            backgroundColor: AppTheme.indigoAccent,
+            foregroundColor: Colors.white,
+            icon: const Icon(Icons.upload_file_rounded),
+            label: const Text("Upload"),
+          ),
+        ],
       ),
       body: ValueListenableBuilder(
         valueListenable: box.listenable(),

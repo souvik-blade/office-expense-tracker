@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // theme: ThemeData(primarySwatch: Colors.indigo),
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.darkTheme, 
       home: SplashScreen(),
     );
   }
