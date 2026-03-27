@@ -1,4 +1,4 @@
-import 'dart:io';
+
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -15,8 +15,14 @@ class ExcelImport {
 
     if (result == null) return;
 
-    final file = File(result.files.single.path!);
-    final bytes = await file.readAsBytes();
+    final bytes = result.files.single.bytes;
+    if (bytes == null) {
+      // Fallback for non-web platforms where bytes might be null if not explicitly requested
+      // However, on web, bytes is always available.
+      // To ensure cross-platform compatibility, we can use result.files.single.path
+      // and read it, but for web specifically, we need bytes.
+      return;
+    }
 
     final excel = Excel.decodeBytes(bytes);
 

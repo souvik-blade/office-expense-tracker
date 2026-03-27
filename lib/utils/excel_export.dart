@@ -1,9 +1,11 @@
-import 'dart:io';
+import 'dart:io' show File;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:excel/excel.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
+import 'package:universal_html/html.dart' as html;
 import '../models/expense_model.dart';
 
 class ExcelExport {
@@ -31,13 +33,11 @@ class ExcelExport {
     for (final e in allData) {
       sheet
           .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIndex))
-          .value =
-          TextCellValue(DateFormat('dd-MM-yyyy').format(e.date));
+          .value = TextCellValue(DateFormat('dd-MM-yyyy').format(e.date));
 
       sheet
           .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIndex))
-          .value =
-          TextCellValue(DateFormat('MMMM yyyy').format(e.date));
+          .value = TextCellValue(DateFormat('MMMM yyyy').format(e.date));
 
       sheet
           .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: rowIndex))
@@ -46,8 +46,8 @@ class ExcelExport {
       sheet
           .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: rowIndex))
           .value = TextCellValue(
-            e.isIncome ? 'INCOME' : 'EXPENSE',
-          );
+        e.isIncome ? 'INCOME' : 'EXPENSE',
+      );
 
       sheet
           .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: rowIndex))
@@ -56,15 +56,27 @@ class ExcelExport {
       rowIndex++;
     }
 
-    // ================= SAVE FILE =================
-    final dir = await getApplicationDocumentsDirectory();
-    final fileName =
-        'Office_Expense_Full_Data_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.xlsx';
-    final file = File('${dir.path}/$fileName');
+    final bytes = excel.encode();
+    if (bytes == null) return;
 
-    await file.writeAsBytes(excel.encode()!);
+    final fileName = 'Office_Expense_Full_Data_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.xlsx';
 
-    // ================= OPEN FILE =================
-    await OpenFile.open(file.path);
+    if (kIsWeb) {
+      // ================= WEB DOWNLOAD =================
+      final blob = html.Blob([bytes], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      html.AnchorElement(href: url)
+        ..setAttribute('download', fileName)
+        ..click();
+      html.Url.revokeObjectUrl(url);
+    } else {
+      // ================= MOBILE/DESKTOP SAVE =================
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File('${dir.path}/$fileName');
+      await file.writeAsBytes(bytes);
+
+      // ================= OPEN FILE =================
+      await OpenFile.open(file.path);
+    }
   }
 }
